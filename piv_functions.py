@@ -88,6 +88,16 @@ def reconstruct_grid(x_num, y_num, grid):
         axs[i].axis('off')
     fig.subplots_adjust(hspace = 0, wspace=0)
 
+def save_video(img_vec,filename):
+    import cv2
+    fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v') # note the lower case
+    out = cv2.VideoWriter(filename,fourcc, 30.0, (1024,1024))
+    for i in range(img_vec.shape[2]):
+        frame = img_vec[:,:,i]
+        frame = cv2.cvtColor(frame,cv2.COLOR_GRAY2BGR)
+        out.write(frame)
+    out.release()
+
 def load_video(location, filename, start_frame, n_frames, x_length, y_length):
     import numpy as np
     import cv2
@@ -168,33 +178,3 @@ def get_init_cfl(img, step):
            loc_cfl[j,1,i] = right
     return loc_cfl
 
-#def get_corrected_cfl(img, step, hyst, cell_width):
-#    import numpy as np
-#    import cv2
-#    loc_cfl = get_init_cfl(img,step)
-#    mean_left = np.mean(loc_cfl[:,0,:],axis=0)
-#    mean_right = np.mean(loc_cfl[:,1,:],axis=0)
-#    diff = np.zeros((img.shape[0],int(img.shape[1]-(step+1)),img.shape[2]))
-#    for k in range(img.shape[2]):
-#        frame = cv2.GaussianBlur(img[:,:,k],(11,11),5)
-#        diff[:,:,k] = frame[:,step:img.shape[1]-1].astype(float) - frame[:,0:img.shape[1]-(1+step)].astype(float)
-#    loc_cfl = np.zeros((diff.shape[0],2,diff.shape[2]))
-#    for i in range(diff.shape[2]):
-#       for j in range(diff.shape[0]):
-#           left = np.where(diff[j,:,i] <= diff[j,:,i].min()+hyst)
-#           left_diff = np.abs(left[0]-mean_left[i])
-#           left_disp = 100
-#           while left_disp>cell_width:
-#           left = np.where(left_diff == left_diff.min())[0][0]
-#           right = np.where(diff[j,:,i] >= diff[j,:,i].max()-hyst)
-#           right = right[0] 
-#           right = right[right>left]
-#           right_diff = np.abs(right-mean_right[i])
-#           right = np.where(right_diff == right_diff.min())[0]
-#           if len(right)>0:
-#               right = right[0] # Define the right boundary of the cell free layer
-#           elif len(right)==0:
-#               right = 0
-#           loc_cfl[j,0,i] = left
-#           loc_cfl[j,1,i] = right
-#    return loc_cfl
