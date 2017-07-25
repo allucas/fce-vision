@@ -81,7 +81,7 @@ for i in range(diff.shape[2]):
        loc_cfl[j,0,i] = left
        loc_cfl[j,1,i] = right
 
-#%% Interpolate the zeros in the boundary
+#%% Fill in the missing values by using a cubic interpolation of defined step size
 step = 3
 loc_cfl_interp = np.zeros(loc_cfl.shape)
 for i in range(loc_cfl.shape[2]):
@@ -92,27 +92,56 @@ for i in range(loc_cfl.shape[2]):
             above_l = loc_l[loc_l>j]
             below_l = loc_l[loc_l<j]
             if not ((len(below_l)==0) or (len(above_l)==0)):
-                x = np.append(below_l[(len(below_l)-(step)):len(below_l)],above_l[0:step])
-                y_l = loc_cfl[x,0,i]
-                f_l = interp1d(x,y_l, kind='cubic')
+                x_l = np.append(below_l[(len(below_l)-(step)):len(below_l)],above_l[0:step])
+                y_l = loc_cfl[x_l,0,i]
+                f_l = interp1d(x_l,y_l, kind='cubic')
                 loc_cfl_interp[j,0,i] = f_l(j)
             else:
                 loc_cfl_interp[j,0,i] = 0
+        else:
+            loc_cfl_interp[j,0,i] = loc_cfl[j,0,i]
         if loc_cfl[j,1,i] == 0:
             above_r = loc_r[loc_r>j]
             below_r = loc_r[loc_r<j]
             if not ((len(below_r)==0) or (len(above_r)==0)):
-                x = np.append(below_r[(len(below_r)-(step)):len(below_r)],above_r[0:step])
-                y_r = loc_cfl[x,1,i]
-                f_r = interp1d(x,y_r, kind='cubic')
+                x_r = np.append(below_r[(len(below_r)-(step)):len(below_r)],above_r[0:step])
+                y_r = loc_cfl[x_r,1,i]
+                f_r = interp1d(x_r,y_r, kind='cubic')
                 loc_cfl_interp[j,1,i] = f_r(j)
             else:
                 loc_cfl_interp[j,1,i] = 0
         else:
-            loc_cfl_interp[j,0,i] = loc_cfl[j,0,i]
             loc_cfl_interp[j,1,i] = loc_cfl[j,1,i]
 
 #%% Fill in the missing values using a mean weighted filter 
+step = 3
+loc_cfl_interp = np.zeros(loc_cfl.shape)
+for i in range(loc_cfl.shape[2]):
+    loc_l = np.where(loc_cfl[:,0,i])[0]
+    loc_r = np.where(loc_cfl[:,1,i])[0]
+    for j in range(loc_cfl.shape[0]):
+        if loc_cfl[j,0,i] == 0:
+            above_l = loc_l[loc_l>j]
+            below_l = loc_l[loc_l<j]
+            if not ((len(below_l)==0) or (len(above_l)==0)):
+                x_l = np.append(below_l[(len(below_l)-(step)):len(below_l)],above_l[0:step])
+                loc_cfl_interp[j,0,i] = np.mean(x_l)
+            else:
+                loc_cfl_interp[j,0,i] = 0
+        else:
+            loc_cfl_interp[j,0,i] = loc_cfl[j,0,i]
+        if loc_cfl[j,1,i] == 0:
+            above_r = loc_r[loc_r>j]
+            below_r = loc_r[loc_r<j]
+            if not ((len(below_r)==0) or (len(above_r)==0)):
+                x_r = np.append(below_r[(len(below_r)-(step)):len(below_r)],above_r[0:step])
+                loc_cfl_interp[j,1,i] = np.mean(x_r)
+            else:
+                loc_cfl_interp[j,1,i] = 0
+        else:
+            loc_cfl_interp[j,1,i] = loc_cfl[j,1,i]
+            
+##%% Fill in the missing values using a mean weighted filter 
 #step = 5
 #loc_cfl_interp = np.zeros(loc_cfl.shape)
 #for i in range(loc_cfl.shape[2]):
@@ -137,11 +166,12 @@ for i in range(loc_cfl_interp.shape[2]-1):
 #%% Overlay two images
 loc_cfl = loc_cfl.astype(int)
 loc_cfl_interp = loc_cfl_interp.astype(int)
+x_range = [50,450]
 edges = np.zeros(img.shape, dtype='uint8')
 wall = np.zeros(img.shape, dtype='uint8')
 median_loc = np.zeros(img.shape, dtype='uint8')
 for i in range(img.shape[2]):
-    for j in range(img.shape[0]):
+    for j in range(x_range[0],x_range[1]):
         edges[j,loc_cfl_interp[j,:,i],i] = 255
         median_loc[j,mean_left[i].astype(int),i] = 255
         #wall[j,loc_wall[j,1,i],i] = 0
