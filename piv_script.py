@@ -1,4 +1,4 @@
- #!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Fri Jul 14 19:30:12 2017
@@ -21,14 +21,14 @@ import os
 location = '/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/PIV/flow_5' # Image stack location
 os.chdir(location)
 filename = 'flow' # Image names
-n_frames = 1000 # Number of frames to load and average over the PIV results
-y_length = [100,350] # Y limits of the image
-x_length = [0,500] # X limits of the image
+n_frames = 2000 # Number of frames to load and average over the PIV results
+y_length = [0,180] # Y limits of the image
+x_length = [0,400] # X limits of the image
 start_frame = 1000 # Starting frame number on the filename
 
 # PIV parameters
-g_size = 25 # Size of the interrogation grid for PIV
-step_size = 2  # Step size of PIV
+g_size = 20 # Size of the interrogation grid for PIV
+step_size = 4  # Step size of PIV
 #%% Load the video
 img = pivf.load_video(location=location,filename=filename, n_frames=n_frames, x_length=x_length, y_length=y_length, start_frame=start_frame)
 
@@ -40,7 +40,7 @@ for i in range(n_frames-1):
 
 #%% Break the image into particles
 blackhat_vec = np.zeros(sub_vec.shape)
-kernel_bh = np.ones((5,5),np.uint8)
+kernel_bh = np.ones((7,7),np.uint8)
 kernel_op = np.ones((3,3),np.uint8)
 for i in range(sub_vec.shape[2]): 
     blackhat = cv2.morphologyEx(sub_vec[:,:,i], cv2.MORPH_TOPHAT, kernel_bh)
@@ -107,8 +107,8 @@ for i in range(sub_vec.shape[2]-step_size):
     for j in range(corr_vec.shape[2]):
         avg_corr[:,:,j] = avg_corr[:,:,j] + corr_vec[:,:,j]
 
-for k in range(avg_corr.shape[2]):
-    avg_corr[:,:,k] = avg_corr[:,:,k]/count
+
+avg_corr = avg_corr/count
 
 #%% Plot the average correlation
 pivf.reconstruct_grid(int(sub_vec.shape[0]/g_size),int(sub_vec.shape[1]/g_size),avg_corr)
@@ -116,6 +116,8 @@ pivf.reconstruct_grid(int(sub_vec.shape[0]/g_size),int(sub_vec.shape[1]/g_size),
 #%% Find the vectors in each grid space and plot them
 x_disp = np.zeros(avg_corr.shape[2])
 y_disp = np.zeros(avg_corr.shape[2])
+v_x = np.zeros(avg_corr.shape[2])
+v_y = np.zeros(avg_corr.shape[2])
 center = np.floor(g_size/2)
 for i in range(avg_corr.shape[2]):
     loc = np.where(avg_corr[:,:,i]==avg_corr[:,:,i].max())
@@ -124,19 +126,27 @@ for i in range(avg_corr.shape[2]):
     dy = 0
     x_disp[i] = loc[0][0] + 1 - center + dx
     y_disp[i] = loc[1][0] + 1 - center + dy
-
+    v_x[i] = x_disp[i]/step_size
+    v_y[i] = y_disp[i]/step_size
 #ax = plt.axes()
 #g = 3
 #ax.arrow(0.5, 0, y_disp[g]/(2*y_disp.min()), x_disp[g]/x_disp.min(), head_width=0.1,length_includes_head=True, fc='k', ec='k')
 #plt.ylim([0,1])
 #plt.show()
-
+#%% Plot the vectors
+scaling = 2
+g_initial = pivf.grid_img(img[:,:,1],g_size)
 x_num = int(sub_vec.shape[0]/g_size)
 y_num = int(sub_vec.shape[1]/g_size)
 fig, axs = plt.subplots(x_num, y_num, figsize=(3, 6), facecolor='w', edgecolor='k')
 axs = axs.ravel()
 for i in range(x_num*y_num):
-    axs[i].arrow(0.5, 0, y_disp[i]/g_size, -x_disp[i]/g_size, head_width=0.075,length_includes_head=True, fc='k', ec='k')
+    #axs[i].imshow(g_initial[:,:,i],'gray')
+    if (x_disp[i]==0) & (y_disp[i]==0):
+        cir = plt.Circle((0.5,0),0.1, color='k')
+        axs[i].add_artist(cir)
+    else:
+        axs[i].arrow(0.5, 0, y_disp[i]*scaling/g_size, -x_disp[i]*scaling/g_size, head_width=0.1,length_includes_head=True, fc='k', ec='k')
     axs[i].axis('off')
 fig.subplots_adjust(hspace = 0, wspace=0)
 
@@ -150,5 +160,5 @@ plt.ylabel('Displacement (px)')
 
 #plt.xticks([1,2,3,4,5])
     
-    
-    
+
+#%% Attempt to calculate the value for the stress in the wall
