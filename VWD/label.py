@@ -33,7 +33,9 @@ Code taken from: http://www.pyimagesearch.com/2015/03/09/capturing-mouse-click-e
 # import the necessary packages
 import argparse
 import cv2
-os.chdir('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/VWD/Videos/1000')
+training_data_folder = '/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/Videos/training_videos/training_data'
+video_folder = '/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/Videos/training_videos/1001'
+os.chdir(video_folder)
 
 # initialize the list of reference points and boolean indicating
 # whether cropping is being performed or not
@@ -91,7 +93,7 @@ while True:
 refPt_vec = np.concatenate(([refPt_x],[refPt_y]),axis=0)
 set_vec = set_vec[1:,:]
 # Save the vectorized image to a csv file. Append to the existing file
-os.chdir('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/VWD/Videos/')
+os.chdir(training_data_folder)
 with open('training_data_1.csv', 'ab') as abc:
     np.savetxt(abc, set_vec, delimiter=",")
     
@@ -117,6 +119,6 @@ def create_rest_set(img,grid_size, refPt_vec):
     return rest_set_vec
 
 rest_set_vec = create_rest_set(clone.copy(),grid,refPt_vec=refPt_vec)
-os.chdir('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/VWD/Videos/')
+os.chdir(training_data_folder)
 with open('training_data_0.csv', 'ab') as abc:
     np.savetxt(abc, rest_set_vec, delimiter=",")
