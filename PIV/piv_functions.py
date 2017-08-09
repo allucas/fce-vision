@@ -104,7 +104,7 @@ def load_video(location, filename, start_frame, n_frames, x_length, y_length):
     img = np.zeros((x_length[1]-x_length[0],y_length[1]-y_length[0],n_frames),dtype='uint8')
     eq = np.zeros((x_length[1]-x_length[0],y_length[1]-y_length[0],n_frames),dtype='uint8')
     for i in range(start_frame,start_frame+n_frames):
-        frame = cv2.imread(location+'/'+filename+str(i)+'.tif')
+        frame = cv2.imread(location+'/'+filename+str(i)+'.jpg')
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY )
         img[:,:,i-start_frame] = frame[x_length[0]:x_length[1],y_length[0]:y_length[1]]
         eq[:,:,i-start_frame] = cv2.equalizeHist(frame[x_length[0]:x_length[1],y_length[0]:y_length[1]])

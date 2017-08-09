@@ -74,8 +74,9 @@ def rest_label(img_vec, grid ,refPt_vec):
         np.savetxt(abc, rest_set_vec, delimiter=",")
 
 #%% Script
-
-img_vec = load_video(location='/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/Videos/training_videos/1001')
+#vid_loc = '/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/Videos/training_videos/1001'
+vid_loc = input('Enter full path of the video folder: ')
+img_vec = load_video(location=vid_loc)
 
 #%%
 import numpy as np
@@ -147,9 +148,11 @@ os.chdir(training_data_folder)
 with open('training_data_0.csv', 'ab') as abc:
     np.savetxt(abc, rest_set_vec, delimiter=",")
 
-for i in range(img_vec.shape[2]-1):
+#%%
+frac = 0.3 # Fraction of the rest of the frames that should be included in the set
+for i in range(np.floor((img_vec.shape[2]-1)*frac)):
     set_vec = create_init_set(img_vec[:,:,i+1], grid, refPt_vec = refPt_vec)
-    rest_set_vec = create_rest_set(img_vec[:,:,i+1])
+    rest_set_vec = create_rest_set(img_vec[:,:,i+1], grid, refPt_vec = refPt_vec)
     os.chdir(training_data_folder)
     with open('training_data_1.csv', 'ab') as abc:
         np.savetxt(abc, set_vec, delimiter=",")
