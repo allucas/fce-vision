@@ -46,6 +46,26 @@ scores = cross_val_score(clf,X_train, y_train, cv=5)
 #%% Create a confusion matrix to evaluate performance
 from sklearn.model_selection import cross_val_predict
 y_train_pred = cross_val_predict(clf, X_train, y_train, cv=3)
+#%%
 from sklearn.metrics import confusion_matrix
 confusion_matrix(y_train, y_train_pred)
+
+# To load the saved classifier use: from sklearn.externals import joblib joblib.dump(clf, 'filename.pkl') 
+
+# Compare the model to a classifier that always predicts null
+# This code makes our own sklearn estimator for never predicting 0
+#%%
+from sklearn.base import BaseEstimator
+class never_zero(BaseEstimator):
+    def fit(self, X, y=None):
+        pass
+    def predict(self, X):
+        return np.zeros((len(X),1), dtype=bool)
+never_zero_clf = never_zero()
+cross_val_score(never_zero_clf, X_train, y_train, cv=5, scoring='accuracy')
+
+#%% Run the classifier in the test set
+from sklearn.metrics import accuracy_score
+y_pred_test = clf.predict(X_test)
+test_score = accuracy_score(y_test, y_pred_test)
 

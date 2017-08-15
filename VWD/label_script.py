@@ -73,24 +73,46 @@ def rest_label(img_vec, grid ,refPt_vec):
     with open('training_data_0.csv', 'ab') as abc:
         np.savetxt(abc, rest_set_vec, delimiter=",")
 
-#%% Script
-#vid_loc = '/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/Videos/training_videos/1001'
-vid_loc = input('Enter full path of the video folder: ')
-img_vec = load_video(location=vid_loc)
+
+def get_optimal_grid(img_shape,grid_size,l_s):
+    rem1 = 1
+    rem2 = 1
+    count = 0
+    final_grid = 0
+    if l_s == 'l':
+        while (rem1 != 0) and (rem2 != 0):
+            final_grid = grid_size+count
+            rem1 = img_shape[0]%final_grid
+            rem2 = img_shape[1]%final_grid
+            count = count+1
+    if l_s == 's':
+        while (rem1 != 0) and (rem2 != 0):
+            final_grid = grid_size-count
+            rem1 = img_shape[0]%final_grid
+            rem2 = img_shape[1]%final_grid
+            count = count+1 
+    return final_grid
 
 #%%
 import numpy as np
 import cv2
 import os
-os.chdir('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/PIV/piv-repo')
-import piv_functions as pivf
+#os.chdir('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/fce-vision/PIV')
+#import piv_functions as pivf
+
+
+#%% Script
+#vid_loc = '/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/Videos/training_videos/1005'
+vid_loc = input('Enter full path of the video folder: ')
+list_dir = os.listdir(vid_loc)
+img_vec = cv2.imread(vid_loc + '/' + list_dir[2])
 
 refPt = []
 
 #% Get the mouse location in the ROI
-image = img_vec[:,:,0]
+image = cv2.cvtColor(img_vec, cv2.COLOR_RGB2GRAY)
 image = image.copy()
-grid = pivf.get_optimal_grid(image.shape,20, 's')
+grid = get_optimal_grid(image.shape,20, 's')
 def click_rect(event, x, y, flags, param):
     	# grab references to the global variables
         global refPt
@@ -99,8 +121,9 @@ def click_rect(event, x, y, flags, param):
     	# performed
         if event == cv2.EVENT_LBUTTONDOWN:
             refPt = [(x, y)]
-            clone1 = cv2.rectangle(image, (refPt[0][0]-(grid),refPt[0][1]-(grid)), (refPt[0][0]+(grid),refPt[0][1]+(grid)), (0, 255, 0), 2).copy()
-            cv2.imshow("image", clone1)
+            if not (((refPt[0][0]-grid) < 0) or ((refPt[0][0]+grid)>image.shape[1]) or ((refPt[0][1]-grid)<0) or ((refPt[0][1]+grid)>image.shape[0])):
+                clone1 = cv2.rectangle(image, (refPt[0][0]-(grid),refPt[0][1]-(grid)), (refPt[0][0]+(grid),refPt[0][1]+(grid)), (0, 255, 0), 2).copy()
+                cv2.imshow("image", clone1)
 
 
 cropped_region = np.zeros((grid*2,grid*2,1000))
@@ -119,6 +142,7 @@ while True:
     cv2.imshow("image", image)
     key = cv2.waitKey(1) & 0xFF
     if refPt[0]!=temp_loc[0]:
+        if not (((refPt[0][0]-grid) < 0) or ((refPt[0][0]+grid)>image.shape[1]) or ((refPt[0][1]-grid)<0) or ((refPt[0][1]+grid)>image.shape[0])):
             temp_loc = refPt
             refPt_x.append(refPt[0][0])
             refPt_y.append(refPt[0][1])
@@ -134,7 +158,7 @@ while True:
     	# if the 'c' key is pressed, break from the loop
     elif key == ord("c"):
     		break
-
+print('Initial labeling completed, continuing to the rest of the video...')
 refPt_vec = np.concatenate(([refPt_x],[refPt_y]),axis=0)
 set_vec = set_vec[1:,:]
 # Save the vectorized image to a csv file. Append to the existing file
@@ -149,8 +173,11 @@ with open('training_data_0.csv', 'ab') as abc:
     np.savetxt(abc, rest_set_vec, delimiter=",")
 
 #%%
+img_vec = load_video(location=vid_loc) # Load the rest of the video for the analysis
+
+#%%
 frac = 0.3 # Fraction of the rest of the frames that should be included in the set
-for i in range(np.floor((img_vec.shape[2]-1)*frac)):
+for i in range(int(np.floor((img_vec.shape[2]-1)*frac))):
     set_vec = create_init_set(img_vec[:,:,i+1], grid, refPt_vec = refPt_vec)
     rest_set_vec = create_rest_set(img_vec[:,:,i+1], grid, refPt_vec = refPt_vec)
     os.chdir(training_data_folder)
