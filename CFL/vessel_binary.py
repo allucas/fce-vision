@@ -14,7 +14,9 @@ from scipy import signal
 import scipy
 
 #img = cv2.imread('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/fce-vision/CFL/Joyce/LR-13 Peptide_MMStack_Pos0.ome.tif')
-img = cv2.imread('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/fce-vision/CFL/Joyce/3_10^-6 Phen after Pep Base_MMStack_Pos0.ome.tif')
+#img = cv2.imread('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/fce-vision/CFL/Joyce/3_10^-6 Phen after Pep Base_MMStack_Pos0.ome.tif')
+img = cv2.imread('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/fce-vision/CFL/Joyce/AfterPepBaseline_MMStack_Pos0.ome.tif')
+#img = cv2.imread('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/fce-vision/CFL/Joyce/Baseline1_MMStack_Pos0.ome.tif')
 #%% Inputs
 #cal_factor = int(input('Enter calibration factor (in m/px): '))
 #filename = input('filename: ') # Image name
@@ -25,7 +27,7 @@ img_gray = cv2.GaussianBlur(img_gray, (21,21),10)
 plt.imshow(img_gray,'gray')
 #img_thresh = cv2.adaptiveThreshold(img_gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
 #            cv2.THRESH_BINARY,3,2)
-ret , img_thresh = cv2.threshold(img_gray,100,255,cv2.THRESH_BINARY)
+ret , img_thresh = cv2.threshold(img_gray,150,255,cv2.THRESH_BINARY)
 
 plt.figure()
 plt.imshow(img_thresh,'binary')
@@ -84,6 +86,7 @@ while True:
 
 #%%
 edge_loc = np.zeros((gradient.shape[0],2))
+
 for i in range(gradient.shape[0]):
     idx = np.where(gradient[i,:]>=200)
     idx = idx[0]
