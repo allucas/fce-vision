@@ -14,11 +14,11 @@ from scipy import signal
 import scipy
 
 #img = cv2.imread('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/fce-vision/CFL/Joyce/LR-13 Peptide_MMStack_Pos0.ome.tif')
-#img = cv2.imread('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/fce-vision/CFL/Joyce/3_10^-6 Phen after Pep Base_MMStack_Pos0.ome.tif')
+img = cv2.imread('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/fce-vision/CFL/Joyce/3_10^-6 Phen after Pep Base_MMStack_Pos0.ome.tif')
 #%% Inputs
-cal_factor = int(input('Enter calibration factor (in m/px): '))
-filename = input('filename: ') # Image name
-img = cv2.imread(filename)
+#cal_factor = int(input('Enter calibration factor (in m/px): '))
+#filename = input('filename: ') # Image name
+#img = cv2.imread(filename)
 #%%
 img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY )
 img_gray = cv2.GaussianBlur(img_gray, (21,21),10)
@@ -42,6 +42,47 @@ plt.imshow(gradient,'binary')
 
 #%% Define the center location of the image
 cent_loc = 1000
+image = img_gray
+def click_rect(event, x, y, flags, param):
+    	# grab references to the global variables
+        global refPt
+    	# if the left mouse button was clicked, record the starting
+    	# (x, y) coordinates and indicate that cropping is being
+    	# performed
+        if event == cv2.EVENT_LBUTTONDOWN:
+            refPt = [(x, y)]
+            clone1 = cv2.circle(image, (refPt[0][0],refPt[0][1]),10, (0, 0, 0), -1).copy()
+            cv2.imshow("image", clone1)
+
+
+refPt = [(0,0)]
+refPt_x = []
+refPt_y = []
+cv2.setMouseCallback("image", click_rect)
+cv2.namedWindow("image")
+clone = image.copy()
+temp_loc = [(0,0)] 
+count = 0
+
+while True: 
+	# display the image and wait for a keypress
+    cv2.imshow("image", image)
+    key = cv2.waitKey(1) & 0xFF
+    if refPt[0]!=temp_loc[0]:
+        if not (((refPt[0][0]) < 0) or ((refPt[0][0])>image.shape[1]) or ((refPt[0][1])<0) or ((refPt[0][1])>image.shape[0])):
+            temp_loc = refPt
+            cent_loc = refPt[0][0]
+    
+    	# if the 'r' key is pressed, reset the cropping region
+    if key == ord("r"):
+        image = clone.copy()
+
+    	# if the 'c' key is pressed, break from the loop
+    elif key == ord("c"):
+    		break
+
+
+#%%
 edge_loc = np.zeros((gradient.shape[0],2))
 for i in range(gradient.shape[0]):
     idx = np.where(gradient[i,:]>=200)
