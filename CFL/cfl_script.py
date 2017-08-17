@@ -34,7 +34,7 @@ def get_init_cfl(img, step):
     # Find the difference between adjacent intesity points
     diff = np.zeros((img.shape[0],int(img.shape[1]-(step+1)),img.shape[2]))
     for k in range(img.shape[2]):
-        frame = cv2.GaussianBlur(img[:,:,k],(11,11),5)
+        frame = cv2.GaussianBlur(img[:,:,k],(11,11),11)
         diff[:,:,k] = frame[:,step:img.shape[1]-1].astype(float) - frame[:,0:img.shape[1]-(1+step)].astype(float)
     loc_cfl = np.zeros((diff.shape[0],2,diff.shape[2]))
     for i in range(diff.shape[2]):
@@ -58,7 +58,7 @@ def get_init_cfl(img, step):
 
 #%% Initial Parameters
 cal_factor = int(input('Enter calibration factor (in m/px): '))
-filename = input('filename: ') # Image names
+filename = input('filename: ') # Image name
 n_frames = 2 # Number of frames to load and average over the PIV results
 y_length = [0,1000] # Y limits of the image
 x_length = [0,1000] # X limits of the image
