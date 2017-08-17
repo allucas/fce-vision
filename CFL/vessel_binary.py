@@ -17,11 +17,11 @@ thresh_val = 170
 #img = cv2.imread('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/fce-vision/CFL/Joyce/LR-13 Peptide_MMStack_Pos0.ome.tif')
 #img = cv2.imread('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/fce-vision/CFL/Joyce/3_10^-6 Phen after Pep Base_MMStack_Pos0.ome.tif')
 #img = cv2.imread('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/fce-vision/CFL/Joyce/AfterPepBaseline_MMStack_Pos0.ome.tif')
-img = cv2.imread('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/fce-vision/CFL/Joyce/Baseline1_MMStack_Pos0.ome.tif')
+#img = cv2.imread('/Users/AlfredoLucas/Documents/Trabajos/University/Cabrales/fce-vision/CFL/Joyce/Baseline1_MMStack_Pos0.ome.tif')
 #%% Inputs
-#cal_factor = int(input('Enter calibration factor (in m/px): '))
-#filename = input('filename: ') # Image name
-#img = cv2.imread(filename)
+cal_factor = float(input('Enter calibration factor (in px/mm): '))
+filename = input('filename: ') # Image name
+img = cv2.imread(filename)
 #%%
 img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY )
 img_gray = cv2.GaussianBlur(img_gray, (21,21),10)
@@ -117,10 +117,10 @@ img2 = edges
 dst = cv2.addWeighted(img1,0.3,img2,0.7,0) 
 
 #%% Export the results to a csv file
-np.savetxt(filename[:-4]+'.csv',edge_loc[:,:]*cal_factor, delimiter=',')
+np.savetxt(filename[:-4]+'.csv',edge_loc[:,:]/cal_factor, delimiter=',')
 cv2.imwrite(filename[:-4]+'_edges.jpg',dst[:,:])
 
 #%% Print the median value for the diameter
-med_diam = (np.median(edge_loc[:,1]) - np.median(edge_loc[:,0]))*cal_factor
+med_diam = (np.median(edge_loc[:,1]) - np.median(edge_loc[:,0]))/cal_factor
 
 print('\n The median diameter found is: ',med_diam)
